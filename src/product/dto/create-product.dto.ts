@@ -1,5 +1,5 @@
 import { Account } from 'account/entities/account.entity';
-import { IsString, IsDecimal, IsNotEmpty, IsArray } from 'class-validator';
+import { IsString, IsDecimal, IsNotEmpty, IsArray, IsNumber, IsOptional } from 'class-validator';
 import { isBoolean } from 'validator';
 
 export class CreateProductDto {
@@ -20,6 +20,8 @@ export class CreateProductDto {
   image: string;
 
   @IsArray()
-  disabledStoreIds: number[];
+  @IsNumber({}, { each: true })
+  @IsOptional()
+  disabledStoresIds?: number[];
 
 }

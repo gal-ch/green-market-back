@@ -24,7 +24,7 @@ export class ProductService {
   ) {}
 
   async findAll(): Promise<Product[]> {
-    return this.productRepository.find({ relations: ['disabledStores'] });
+    return this.productRepository.find();
   }
 
   async create(
@@ -36,19 +36,19 @@ export class ProductService {
     if (file) {
       imageUrl = await this.uploadService.uploadImageToS3(file);
     }
-    const account = await this.accountService.findOne(req.accountId);
+    const account = await this.accountService.findOne(req.accountId || 1);
     if (!account) throw new UnauthorizedException('Account not found');
-
-    const disabledStores = await this.storeRepository.find({
-      where: { id: In(productDto.disabledStoreIds) },
-    });
+    const disabledStoresIds = Array.isArray(productDto.disabledStoresIds)
+      ? productDto.disabledStoresIds
+      : JSON.parse(productDto.disabledStoresIds || '[]');
 
     const product = this.productRepository.create({
       ...productDto,
       image: imageUrl,
       account,
-      disabledStores,
+      disabledStoresIds,
     });
+
     return this.productRepository.save(product);
   }
 
@@ -72,14 +72,11 @@ export class ProductService {
     if (file) {
       updateProductDto.image = await this.uploadService.uploadImageToS3(file);
     }
-    const disabledStores = await this.storeRepository.find({
-      where: { id: In(updateProductDto.disabledStoreIds) },
+    Object.assign(product, {
+      ...updateProductDto,
+      disabledStoresIds:
+        updateProductDto.disabledStoresIds || product.disabledStoresIds,
     });
-    updateProductDto.disabledStoreIds = disabledStores.map((store) => store.id);
-    updateProductDto.status = updateProductDto.status
-      ? Boolean(updateProductDto.status)
-      : false;
-    Object.assign(product, updateProductDto);
     return this.productRepository.save(product);
   }
 }

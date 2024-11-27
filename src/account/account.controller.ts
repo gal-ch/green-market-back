@@ -21,9 +21,8 @@ export class AccountController {
 
   //@UseGuards(AuthGuard)
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    console.log('halooooooooooooooo');
-    return this.accountService.findOne(+id);
+  async findOne(@Param('id') id: string) {    
+    return await this.accountService.findOne(+id);
   }
 
   @Get('findMe')

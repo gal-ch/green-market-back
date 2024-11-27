@@ -106,5 +106,9 @@ import { PaymentService } from 'payment/payment.service';
     // HttpService,
     PaymentService,
   ],
+
 })
+
+
 export class AppModule {}
+

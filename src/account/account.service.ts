@@ -4,6 +4,7 @@ import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import axios from 'axios';
 
 @Injectable()
 export class AccountService {
@@ -17,7 +18,35 @@ export class AccountService {
     return this.accountRepository.save(account);
   }
 
-  findOne(id: number): Promise<Account> {
+  async findOne(id: number): Promise<Account> {
+// try{
+//     const payload = {
+//       name: 'גל',
+//       active: true,
+//       email: null,
+//       contactPerson: 'dk',
+//       labels: [],
+//       taxId: null
+//     };
+
+//     const response = await axios.post(
+//       `https://api.greeninvoice.co.il/api/v1/clients/search`,
+//       payload,
+//       {
+//         headers: {
+//           Authorization: `Bearer e1a25375-702f-4790-83a0-6ce28a98ddf3`,
+//           'Content-Type': 'application/json',
+//         },
+//       },
+//     );
+//   }catch(e){
+//     console.log(e);
+    
+//   }
+    
+
+
+
     return this.accountRepository.findOneBy({ id });
   }
 

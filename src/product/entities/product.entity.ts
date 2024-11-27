@@ -1,4 +1,5 @@
 import { Account } from 'account/entities/account.entity';
+import { IsArray, IsNumber, IsOptional } from 'class-validator';
 import { Store } from 'store/entities/store.entity';
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinTable } from 'typeorm';
 
@@ -28,7 +29,6 @@ export class Product {
   @Column()
   unit: string;
 
-  @ManyToMany(() => Store, { nullable: true })
-  @JoinTable({ name: "product_disabled_stores" })
-  disabledStores: Store[];
+  @Column('int', { array: true, default: [] })
+  disabledStoresIds: number[];
 }
