@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Order } from './entities/order.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Between, In, Repository } from 'typeorm';
@@ -24,7 +24,12 @@ export class OrderService {
       const [expirationMonth, expirationYear] = cardDetails.creditCardExpiration
         .split('/')
         .map((x) => x.trim());
-      const account = await this.accountService.findOne(1);
+      const account = await this.accountService.findAccountByUrl(
+        orderDetails.accountUrl,
+      );
+      if (!account) {
+        throw new NotFoundException(`account not found`);
+      }
       const itemsArray = orderDetails.details?.map((item) => {
         return {
           Item: {
@@ -122,7 +127,7 @@ export class OrderService {
     startDate?: string;
     endDate?: string;
     filters?: Record<string, number[]>;
-    accountId?: number;
+    accountId: number;
     open?: boolean;
   }): Promise<Order[]> {
     const queryOptions: any = { relations: ['store', 'account'] };
@@ -173,7 +178,7 @@ export class OrderService {
     startDate: string,
     endDate: string,
     filters: Record<string, number[]>,
-    accountId: number,
+    req: any,
     storeId?: number,
   ) {
     try {
@@ -182,7 +187,7 @@ export class OrderService {
         startDate,
         endDate,
         filters,
-        accountId: accountId || 1,
+        accountId: req.user.sub,
       });
       const reportData = storeId
         ? this.getStoreReport(orders)
@@ -299,11 +304,13 @@ export class OrderService {
     startDate: string,
     endDate: string,
     filters: Record<string, number[]>,
+    accountId: number,
   ) {
     const allOrders = await this.findAll({
       startDate,
       endDate,
       filters,
+      accountId,
     });
     const ordersByStores = allOrders.reduce(
       (acc, order) => {

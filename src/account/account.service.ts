@@ -1,10 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateAccountDto } from './dto/create-account.dto';
+import { NotFoundException } from '@nestjs/common';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import axios from 'axios';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AccountService {
@@ -14,22 +14,44 @@ export class AccountService {
   ) {}
 
   create(email: string, password: string) {
-    const account = this.accountRepository.create({email, password});
+    const account = this.accountRepository.create({ email, password });
     return this.accountRepository.save(account);
+  }
+
+  async findPartialOneByUrl(accountUrl: string): Promise<Partial<Account>> {
+    const account = await this.accountRepository.findOneBy({
+      siteUrl: accountUrl,
+    });
+    console.log(account);
+    
+
+    return {
+      id: account.id,
+      settings: account.settings,
+      siteUrl: account.siteUrl,
+      email: account.email,
+    };
+  }
+
+  async findAccountByUrl(accountUrl: string): Promise<Account> {
+    const account = await this.accountRepository.findOneBy({
+      siteUrl: accountUrl,
+    });
+    return account
   }
 
   async findOne(id: number): Promise<Account> {
     return this.accountRepository.findOneBy({ id });
   }
 
-  async findByEmail(email: string) {    
-    return await this.accountRepository.findOneBy({email});
+  async findByEmail(email: string) {
+    return await this.accountRepository.findOneBy({ email });
   }
 
   async update(
     id: number,
     updateAccountDto: UpdateAccountDto,
-  ): Promise<Account> {    
+  ): Promise<Account> {
     const account = await this.accountRepository.findOneBy({ id });
     if (!account) {
       throw new NotFoundException(`account with id ${id} not found`);
@@ -43,9 +65,6 @@ export class AccountService {
   }
 }
 
-
-
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 // import * as fs from 'fs';
 // import csvParser from 'csv-parser';
 // import axios from 'axios';
@@ -85,7 +104,7 @@ import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 //       },
 //     );
 //     console.log(response);
-    
+
 //   }
 
 //   private async parseCsv(filePath: string): Promise<any[]> {

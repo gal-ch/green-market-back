@@ -1,4 +1,8 @@
-import { Injectable, ConflictException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AccountService } from 'account/account.service';
 import { CreateAccountDto } from 'account/dto/create-account.dto';
@@ -12,37 +16,37 @@ export class AuthService {
   constructor(
     private jwtService: JwtService,
     private userService: UserService,
-    private accountService: AccountService
+    private accountService: AccountService,
   ) {}
 
-  async register(email: string, password: string) {    
+  async register(email: string, password: string) {
     const existingUser = await this.accountService.findByEmail(email);
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
+    console.log('fdsfdsfdsfdsfds');
+    
     const salt = await bcrypt.genSalt();
     const hashedPassword = await bcrypt.hash(password, salt);
-    const newUser = await this.accountService.create(
-      email,
-      hashedPassword,
-    );
-    
+    const newUser = await this.accountService.create(email, hashedPassword);
+
     const payload = { username: newUser.email, sub: newUser.id };
     const access_token = this.jwtService.sign(payload, {
       secret: process.env.JWT_SECRET,
       expiresIn: '1w',
-    });    
+    });
     return { access_token };
   }
 
-  async login(email: string, password:string) {
-    const user = await this.accountService.findByEmail(email);
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+  async login(email: string, password: string) {
+    const account = await this.accountService.findByEmail(email);
+    if (!account || !(await bcrypt.compare(password, account.password))) {
       throw new UnauthorizedException('Invalid credentials');
     }
-    const payload = { sub: user.id, username: user.email };
+    const payload = { sub: account.id, username: account.email };
     return {
       access_token: await this.jwtService.signAsync(payload),
+      account: account
     };
   }
 }

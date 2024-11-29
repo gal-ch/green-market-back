@@ -7,27 +7,37 @@ import {
   Param,
   Delete,
   Put,
+  Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { AccountService } from './account.service';
 import { CreateAccountDto } from './dto/create-account.dto';
 import { UpdateAccountDto } from './dto/update-account.dto';
 import { Account } from './entities/account.entity';
+import { Public } from 'common/decorators/public.decorator';
 import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Controller('account')
 export class AccountController {
   constructor(private readonly accountService: AccountService) {}
 
-  //@UseGuards(AuthGuard)
-  @Get(':id')
-  async findOne(@Param('id') id: string) {    
-    return await this.accountService.findOne(+id);
+  @Get()
+  @UseGuards(AuthGuard)
+  async findOne(@Req() req: any) {
+    const user = req.user;
+    if (!user) {
+      throw new UnauthorizedException('User not found in request');
+    }
+    console.log(user, 'user');
+    
+    return await this.accountService.findOne(user.sub);
   }
 
-  @Get('findMe')
-  findMe() {
-    console.log('halooooooooooooooo');
+  @Public()
+  @Post('accountByUrl')
+  async accountByUrl(@Body() data: { accountUrl: string }) {
+    return await this.accountService.findPartialOneByUrl(data.accountUrl);
   }
 
   @Patch(':id')
@@ -40,11 +50,13 @@ export class AccountController {
     return this.accountService.remove(+id);
   }
 
-  @Put(':id')
+  @UseGuards(AuthGuard)
+  @Put('')
   async updateAccount(
-    @Param('id') id: number,
     @Body() updateAccountDto: CreateAccountDto,
+    @Req() req: any,
   ): Promise<Account> {
-    return this.accountService.update(id, updateAccountDto);
+    const accountId = req.user.sub;
+    return this.accountService.update(accountId, updateAccountDto);
   }
 }

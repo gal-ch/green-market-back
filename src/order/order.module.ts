@@ -11,6 +11,9 @@ import { Store } from 'store/entities/store.entity';
 import { PaymentModule } from 'payment/payment.module';
 import { PaymentService } from 'payment/payment.service';
 import { StoreModule } from 'store/store.module';
+import { JwtService } from '@nestjs/jwt';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Module({
   imports: [
@@ -19,8 +22,15 @@ import { StoreModule } from 'store/store.module';
     MailModule,
     PaymentModule,
   ],
-  providers: [OrderService],  // Ensure OrderService is provided here
+  providers: [
+    OrderService,
+    JwtService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ], // Ensure OrderService is provided here
   controllers: [OrderController],
-  exports: [OrderService],  // Make sure to export it for use in other modules
+  exports: [OrderService], // Make sure to export it for use in other modules
 })
 export class OrderModule {}

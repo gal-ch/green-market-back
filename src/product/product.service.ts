@@ -11,6 +11,8 @@ import { UploadService } from 'upload/upload.service';
 import { AccountService } from 'account/account.service';
 import { StoreService } from 'store/store.service';
 import { Store } from 'store/entities/store.entity';
+import { log } from 'console';
+import { Account } from 'account/entities/account.entity';
 
 @Injectable()
 export class ProductService {
@@ -23,8 +25,18 @@ export class ProductService {
     private readonly storeRepository: Repository<Store>,
   ) {}
 
-  async findAll(): Promise<Product[]> {
-    return this.productRepository.find();
+  async findAll(accountUrl: string): Promise<Product[]> {
+    const account: Account =
+      await this.accountService.findAccountByUrl(accountUrl);
+    log('account');
+    console.log(account, 'account');
+
+    return this.productRepository.find({
+      where: {
+        account: { id: account.id }, // Properly reference the relation
+      },
+      relations: ['account'], // Ensure the account relation is loaded if needed
+    });
   }
 
   async create(
@@ -36,17 +48,18 @@ export class ProductService {
     if (file) {
       imageUrl = await this.uploadService.uploadImageToS3(file);
     }
-    const account = await this.accountService.findOne(req.accountId || 1);
+    const account = await this.accountService.findOne(req.user.sub);
     if (!account) throw new UnauthorizedException('Account not found');
     const disabledStoresIds = Array.isArray(productDto.disabledStoresIds)
       ? productDto.disabledStoresIds
-      : JSON.parse(productDto.disabledStoresIds || '[]');
+      : JSON.parse(productDto?.disabledStoresIds || '[]');
 
     const product = this.productRepository.create({
       ...productDto,
       image: imageUrl,
       account,
       disabledStoresIds,
+      status: Boolean(productDto.status),
     });
 
     return this.productRepository.save(product);
@@ -72,10 +85,13 @@ export class ProductService {
     if (file) {
       updateProductDto.image = await this.uploadService.uploadImageToS3(file);
     }
+    const disabledStoresIds = Array.isArray(updateProductDto.disabledStoresIds)
+      ? updateProductDto.disabledStoresIds
+      : JSON.parse(updateProductDto?.disabledStoresIds || '[]');
+
     Object.assign(product, {
       ...updateProductDto,
-      disabledStoresIds:
-        updateProductDto.disabledStoresIds || product.disabledStoresIds,
+      disabledStoresIds,
     });
     return this.productRepository.save(product);
   }

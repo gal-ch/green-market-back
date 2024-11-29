@@ -7,29 +7,28 @@ import {
   Param,
   Delete,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { OrderService } from './order.service';
-import { CreateOrderDto } from './dto/create-order.dto';
-import { UpdateOrderDto } from './dto/update-order.dto';
-import { Order } from './entities/order.entity';
+import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
   @Post('create')
-  async create(@Body() {orderDetails, cardDetails}, req: any) {
-    console.log('fdsfadsfdsfsadfsfsf');
-    console.log(cardDetails);
-    
-    return await this.orderService.create(orderDetails,cardDetails, req);
+  async create(@Body() { orderDetails, cardDetails }, req: any) {
+    return await this.orderService.create(orderDetails, cardDetails, req);
   }
 
   @Get()
-  findAll() {
-    return this.orderService.findAll({});
+  @UseGuards(AuthGuard)
+  findAll(@Req() req: any) {
+    const accountId = req.user.sub;
+    return this.orderService.findAll({accountId});
   }
 
+  @UseGuards(AuthGuard)
   @Post('getAllOrderByStore')
   async getAllOrderByStore(
     @Body()
@@ -42,12 +41,18 @@ export class OrderController {
       endDate: string;
       filters: Record<string, number[]>;
     },
-  ) {    
-    console.log('fdsfdsafdasfdsafas');
-    
-    return this.orderService.getAllOrderByStore(startDate, endDate, filters);
+    @Req() req: any,
+  ) {
+    const accountId = req.user.sub;
+    return this.orderService.getAllOrderByStore(
+      startDate,
+      endDate,
+      filters,
+      accountId,
+    );
   }
 
+  @UseGuards(AuthGuard)
   @Post('exportReport')
   async exportReport(
     @Body()
@@ -68,13 +73,8 @@ export class OrderController {
       startDate,
       endDate,
       filters,
-      1,
+      req,
       +storeId,
     );
   }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateOrderDto: UpdateOrderDto) {
-  //   return this.orderService.update(+id, updateOrderDto);
-  // }
 }

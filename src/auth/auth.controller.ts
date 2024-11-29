@@ -8,6 +8,7 @@ import { Public } from 'common/decorators/public.decorator';
 export class AuthController {
   constructor(private authService: AuthService) {}
 
+  @Public()
   @Post('login')
   async login(@Body() loginData: { email: string; password: string }) {
     const { email, password } = loginData;

@@ -15,10 +15,10 @@ import { JwtService } from '@nestjs/jwt';
   providers: [
     AccountService,
     JwtService,
-    // {
-    //   provide: APP_GUARD,
-    //   useClass: AuthGuard,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
   ],
   exports: [AccountService],
 })

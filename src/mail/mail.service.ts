@@ -29,7 +29,7 @@ export class MailService {
     const templatePath = path.resolve(__dirname, 'templates', template);
     const response = await this.mailService.sendMail({
       from: `<mygreenmarketinfo@gmail.com>`,
-      to: email,
+      to: email.toLowerCase(),
       subject: subject,
       html,
       attachments: attachments

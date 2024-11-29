@@ -30,4 +30,7 @@ export class Account {
 
   @Column({ nullable: true })
   creditApiKey: string;
+
+  @Column()
+  siteUrl: string
 }

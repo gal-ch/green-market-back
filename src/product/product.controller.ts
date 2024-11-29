@@ -15,14 +15,17 @@ import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
 import { CreateProductDto } from './dto/create-product.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { Public } from 'common/decorators/public.decorator';
+import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Controller('products')
 export class ProductController {
   constructor(private readonly productService: ProductService) {}
 
-  @Get()
-  async findAll(){
-    return this.productService.findAll();
+  @Public()
+  @Post()
+  async findAll(@Body() params: any,){
+    return this.productService.findAll(params.accountUrl);
   }
   
   @Get(':id')
@@ -30,13 +33,18 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
-  @Post()
+  @UseGuards(AuthGuard)
+  @Post('createProduct')
   @UseInterceptors(FileInterceptor('image'))
   async createProduct(
     @Body() createProductDto: CreateProductDto,
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any
   ) {    
+    console.log('hererererere');
+    
+    console.log(req.user.sub);
+    
     return this.productService.create(createProductDto, file, req);
   }
 

@@ -19,8 +19,9 @@ export class StoreService {
     private readonly mailService: MailService,
   ) {}
 
-  async create(storeDto: CreateStoreDto): Promise<Store> {
-    const account = await this.accountService.findOne(1);
+  async create(storeDto: CreateStoreDto, req: any): Promise<Store> {
+    const accountId = req?.user.sub;
+    const account = await this.accountService.findOne(accountId);
     const store = this.storeRepository.create({
       ...storeDto,
       account,
@@ -28,13 +29,17 @@ export class StoreService {
     return this.storeRepository.save(store);
   }
 
-  async findAll(): Promise<Store[]> {
-    return this.storeRepository.find();
+  async findAll(id: number): Promise<Store[]> {
+    return this.storeRepository.find({where: {account: {id}}});
   }
 
-  async findAllActive(): Promise<Store[]> {
-    return this.storeRepository.findBy({ status: true });
-  }
+  async findAllActive(accountUrl: string): Promise<Store[]> {
+    const account = await this.accountService.findAccountByUrl(accountUrl);
+    
+    return this.storeRepository.findBy({
+      status: true,
+      account: { id: account?.id },
+    });  }
 
   async getStoresOfOpenedOrders(accountId: number): Promise<Store[]> {
     const storesWithActiveOrders = await this.storeRepository
@@ -68,7 +73,7 @@ export class StoreService {
 
   async closeStoreEndOfDayAndSendEmail(distributionPoints: number[], req) {
     try {
-      const account = await this.accountService.findOne(req.accountId || 1);
+      const account = await this.accountService.findOne(req.user.sub);
       const stores = await this.storeRepository.find({
         where: {
           id: In(distributionPoints),
@@ -84,12 +89,10 @@ export class StoreService {
             storeId: store.id,
             accountId: account.id,
           });
-          console.log(orders);
 
           const filterOpenOrders = orders?.filter((order) => {
             return order.open;
           });
-          console.log(filterOpenOrders, 'filterOpenOrders');
 
           const startDate = new Date(
             Math.min(
@@ -110,12 +113,13 @@ export class StoreService {
             startDate,
             endDate,
             filters,
+            account.id,
           );
           const tableReportExcel = await this.ordersService.exportReport(
             startDate,
             endDate,
             filters,
-            1,
+            account.id,
             store.id,
           );
 
