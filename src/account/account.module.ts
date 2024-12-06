@@ -6,6 +6,7 @@ import { Account } from './entities/account.entity';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from 'auth/jwt-auth.guard';
 import { JwtService } from '@nestjs/jwt';
+import { UploadService } from 'upload/upload.service';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { JwtService } from '@nestjs/jwt';
   controllers: [AccountController],
   providers: [
     AccountService,
+    UploadService,
     JwtService,
     {
       provide: APP_GUARD,

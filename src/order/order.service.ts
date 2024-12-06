@@ -19,7 +19,7 @@ export class OrderService {
     private readonly mailService: MailService,
   ) {}
 
-  async create(orderDetails, cardDetails, req: any) {
+  async create(orderDetails, cardDetails) {
     try {
       const [expirationMonth, expirationYear] = cardDetails.creditCardExpiration
         .split('/')
@@ -69,12 +69,17 @@ export class OrderService {
       // if (paymentResponse.status !== 'success') {
       //   throw new HttpException('Payment failed', 400);
       // }
-      this.orderRepository.create({
-        ...orderDetails,
+      const order = this.orderRepository.create({
+        details: orderDetails.details,
         store: orderDetails.store.id,
-        account: account.id,
+        account: account,
+        client: orderDetails.clientName,
+        clientEmail: orderDetails.clientEmail,
+        clientPhoneNumber: orderDetails.clientPhoneNumber,
+        open: true,
       });
 
+      await this.orderRepository.save(order);
       let totalPrice = 0;
       orderDetails.details?.forEach(
         (item) => (totalPrice += item.product.price * item.quantity),
@@ -105,7 +110,7 @@ export class OrderService {
       <p>מצורף פירוט המוצרים:</p>
       <ul>
         {{#each details}}
-          <li>{{this.product.name}} - {{this.quantity}} x {{this.product.price}} ILS</li>
+          <li>{{this.product.productName}} - {{this.product.amount}} x {{this.product.price}} ILS</li>
         {{/each}}
       </ul>
       <p>סך הכל: {{totalPrice}} ILS</p>
@@ -143,16 +148,6 @@ export class OrderService {
         createAt: Between(start, end),
       };
     }
-
-    // Apply product filter if provided
-    if (filters?.product && filters.product.length) {
-      queryOptions.where = (qb) => {
-        qb.where('details @> :productFilter', {
-          productFilter: JSON.stringify([{ productName: filters.product }]),
-        });
-      };
-    }
-
     // Apply distribution points filter if provided
     if (filters?.distributionPoints && filters.distributionPoints.length) {
       queryOptions.where = {
@@ -167,11 +162,17 @@ export class OrderService {
         account: { id: accountId },
       };
     }
-
-    console.log(queryOptions);
-
     const orders = await this.orderRepository.find(queryOptions);
-    return orders;
+    const filteredOrders =
+      filters?.products && filters.products.length
+        ? orders.filter((order) =>
+            order.details.some((detail) =>
+              filters.products.includes(detail.productId),
+            ),
+          )
+        : orders;
+
+    return filteredOrders;
   }
 
   async exportReport(

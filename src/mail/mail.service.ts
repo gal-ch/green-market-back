@@ -44,26 +44,6 @@ export class MailService {
       context,
       text,
     });
-    console.log({
-      from: `<mygreenmarketinfo@gmail.com>`,
-      to: email,
-      subject: subject,
-      html,
-      attachments: attachments
-        ? [
-            {
-              filename: 'report.xlsx',
-              content: attachments,
-              encoding: 'base64',
-            },
-          ]
-        : [],
-      context,
-      text,
-    });
-
-    console.log(response, 'response');
-
     return response;
   }
 }

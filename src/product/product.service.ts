@@ -28,8 +28,6 @@ export class ProductService {
   async findAll(accountUrl: string): Promise<Product[]> {
     const account: Account =
       await this.accountService.findAccountByUrl(accountUrl);
-    log('account');
-    console.log(account, 'account');
 
     return this.productRepository.find({
       where: {
@@ -43,7 +41,7 @@ export class ProductService {
     productDto: CreateProductDto,
     file: Express.Multer.File,
     req: any,
-  ): Promise<Product> {
+  ): Promise<Product> { 
     let imageUrl = '';
     if (file) {
       imageUrl = await this.uploadService.uploadImageToS3(file);

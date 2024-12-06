@@ -36,6 +36,7 @@ import { PassportModule } from '@nestjs/passport';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HttpModule, HttpService } from '@nestjs/axios';
 import { PaymentService } from 'payment/payment.service';
+import { AppService } from 'app.service';
 @Module({
   imports: [
     HttpModule,
@@ -76,6 +77,7 @@ import { PaymentService } from 'payment/payment.service';
       entities: [User, Product, Account, Order, Store],
       logging: true,
       synchronize: true,
+      
     }),
     TypeOrmModule.forFeature([User, Product, Account, Store, Order]),
 
@@ -102,8 +104,6 @@ import { PaymentService } from 'payment/payment.service';
     JwtService,
     AuthService,
     MailService,
-    //   AccountMiddleware,
-    // HttpService,
     PaymentService,
   ],
 

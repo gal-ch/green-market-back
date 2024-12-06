@@ -25,7 +25,10 @@ export class ProductController {
   @Public()
   @Post()
   async findAll(@Body() params: any,){
-    return this.productService.findAll(params.accountUrl);
+    const a = this.productService.findAll(params.accountUrl);
+    console.log(a);
+    
+    return a
   }
   
   @Get(':id')
@@ -41,10 +44,6 @@ export class ProductController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: any
   ) {    
-    console.log('hererererere');
-    
-    console.log(req.user.sub);
-    
     return this.productService.create(createProductDto, file, req);
   }
 

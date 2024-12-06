@@ -66,8 +66,6 @@ function preperExcelTab(
 
   for (const table of tables) {
     if (table.extraInfoTable) {
-      console.log(rowsCount);
-
       worksheet.addTable({
         name: 'extraDataTable',
         ref: `A${rowsCount + 1}`,

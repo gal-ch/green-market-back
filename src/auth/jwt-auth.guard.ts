@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { AccountService } from 'account/account.service';
 import { IS_PUBLIC_KEY } from 'common/decorators/public.decorator';
 import { Request } from 'express';
 
@@ -13,7 +14,8 @@ import { Request } from 'express';
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
-    private readonly reflector: Reflector
+    private readonly reflector: Reflector,
+    private readonly accountService: AccountService
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -36,7 +38,12 @@ export class AuthGuard implements CanActivate {
       const payload = await this.jwtService.verifyAsync(token, {
         secret: process.env.JWT_SECRET,
       });
-      request['user'] = payload;      
+      const account = await this.accountService.findOne(payload.sub);
+      
+      // if(account.siteUrl !== request.headers.origin) {
+      //   throw new UnauthorizedException('Invalid or expired token');
+      // }
+      request['user'] = payload;
     } catch (error) {
       throw new UnauthorizedException('Invalid or expired token');
     }

@@ -11,4 +11,6 @@ export class CreateAccountDto {
   @IsString()
   @IsEmpty()
   setting: JSON;
+  
+  headImg: string;
 }

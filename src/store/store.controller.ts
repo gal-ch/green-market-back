@@ -7,17 +7,19 @@ import {
   Delete,
   Put,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { StoreService } from './store.service';
 import { CreateStoreDto } from './dto/create-store.dto';
 import { Store } from './entities/store.entity';
-import { log } from 'console';
 import { Public } from 'common/decorators/public.decorator';
+import { AuthGuard } from 'auth/jwt-auth.guard';
 
 @Controller('stores')
 export class StoreController {
   constructor(private readonly storeService: StoreService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   create(@Body() store: Store, @Req() req: any): Promise<Store> {
     return this.storeService.create(store, req);
@@ -35,6 +37,7 @@ export class StoreController {
     return this.storeService.findAllActive(data.accountUrl);
   }
 
+  @UseGuards(AuthGuard)
   @Get('getStoresOfOpenedOrders')
   async getStoresOfOpenedOrders(req: any): Promise<Store[]> {
     const accountId = req?.user.sub;
@@ -50,6 +53,7 @@ export class StoreController {
   remove(@Param('id') id: string): Promise<void> {
     return this.storeService.remove(+id);
   }
+
 
   @Put(':id')
   async updateStore(

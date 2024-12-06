@@ -78,7 +78,7 @@ export class StoreService {
         where: {
           id: In(distributionPoints),
           account: {
-            id: account.id, // Ensure account ID is correctly referenced
+            id: account.id,
           },
         },
       });

@@ -18,6 +18,7 @@ export class Order {
   @Column('json')
   details: {
     productName: string;
+    productId: number,
     amount: number;
     price: number;
   }[];

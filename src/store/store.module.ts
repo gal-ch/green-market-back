@@ -11,16 +11,26 @@ import { MailModule } from 'mail/mail.module';
 import { AccountService } from 'account/account.service';
 import { OrderService } from 'order/order.service';
 import { MailService } from 'mail/mail.service';
+import { APP_GUARD } from '@nestjs/core';
+import { AuthGuard } from 'auth/jwt-auth.guard';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Store, Order]),
     AccountModule,
     OrderModule,
-    MailModule
+    MailModule,
   ],
   controllers: [StoreController],
-  providers: [StoreService],
+  providers: [
+    StoreService,
+    JwtService,
+    {
+      provide: APP_GUARD,
+      useClass: AuthGuard,
+    },
+  ],
   exports: [StoreService],
 })
 export class StoreModule {}

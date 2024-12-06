@@ -11,14 +11,16 @@ import {
 } from '@nestjs/common';
 import { OrderService } from './order.service';
 import { AuthGuard } from 'auth/jwt-auth.guard';
+import { Public } from 'common/decorators/public.decorator';
 
 @Controller('orders')
 export class OrderController {
   constructor(private readonly orderService: OrderService) {}
 
+  @Public()
   @Post('create')
-  async create(@Body() { orderDetails, cardDetails }, req: any) {
-    return await this.orderService.create(orderDetails, cardDetails, req);
+  async create(@Body() { orderDetails, cardDetails }) {
+    return await this.orderService.create(orderDetails, cardDetails);
   }
 
   @Get()
