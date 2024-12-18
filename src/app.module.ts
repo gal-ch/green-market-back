@@ -1,8 +1,5 @@
 import {
-  MiddlewareConsumer,
   Module,
-  NestModule,
-  RequestMethod,
 } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/entities/user.entity';
@@ -26,17 +23,14 @@ import { AuthModule } from './auth/auth.module';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { AuthService } from 'auth/auth.service';
 import { MailService } from './mail/mail.service';
-import { AccountMiddleware } from 'account/account.middleware';
 import { StoreModule } from 'store/store.module';
 import { OrderModule } from 'order/order.module';
 import { AccountModule } from 'account/account.module';
 import { MailModule } from 'mail/mail.module';
-import { CorsOptions } from '@nestjs/common/interfaces/external/cors-options.interface';
 import { PassportModule } from '@nestjs/passport';
 import { MailerModule } from '@nestjs-modules/mailer';
-import { HttpModule, HttpService } from '@nestjs/axios';
+import { HttpModule } from '@nestjs/axios';
 import { PaymentService } from 'payment/payment.service';
-import { AppService } from 'app.service';
 @Module({
   imports: [
     HttpModule,
@@ -77,7 +71,8 @@ import { AppService } from 'app.service';
       entities: [User, Product, Account, Order, Store],
       logging: true,
       synchronize: true,
-      
+   //   ssl: { rejectUnauthorized: false },
+
     }),
     TypeOrmModule.forFeature([User, Product, Account, Store, Order]),
 
@@ -110,5 +105,5 @@ import { AppService } from 'app.service';
 })
 
 
-export class AppModule {}
+export class AppModule { }
 
